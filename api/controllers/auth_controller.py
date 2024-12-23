@@ -68,7 +68,8 @@ def login():
     user = User.query.filter_by(email=data['email']).first()
     if user and user.check_password(data['password']):
         token = create_access_token(
-            identity={"id": user.id, "role": user.role},  # Use dictionary for identity
+            identity=str(user.id),
+            additional_claims={"role": user.role}
         )
         return jsonify({"token": token}), 200
 
@@ -87,5 +88,5 @@ def logout():
         "message": "Successfully logged out"
     }
     """
-    user_id = get_jwt_identity().get("id")
+    user_id = get_jwt_identity()
     return jsonify({"message": f"User {user_id} logged out successfully!"}), 200

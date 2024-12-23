@@ -1,9 +1,28 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from api.models import db, Course
 from api.utils import role_required
 
 course_bp = Blueprint('course', __name__)
+
+@course_bp.route('/test-token', methods=['GET'])
+@jwt_required()
+def test_token():
+    """
+    Test token validation. Endpoint: GET /test-token
+    Requires a valid JWT token.
+    Response: 
+    {
+        "identity": "user_id"
+    }
+    """
+    try:
+        identity = get_jwt_identity()
+        current_app.logger.info(f"Identity: {identity}")
+        return jsonify({"identity": identity}), 200
+    except Exception as e:
+        current_app.logger.error(f"Token validation failed: {e}")
+        return jsonify({"error": "Token validation failed", "message": str(e)}), 401
 
 # Create a new course
 @course_bp.route('/create', methods=['POST'], endpoint='create_course')
@@ -25,7 +44,7 @@ def create_course():
     if not data or 'name' not in data or 'description' not in data:
         return jsonify({"message": "Invalid data provided"}), 400
 
-    instructor_id = get_jwt_identity().get('id')
+    instructor_id = get_jwt_identity()
     course = Course(
         name=data['name'],
         description=data['description'],

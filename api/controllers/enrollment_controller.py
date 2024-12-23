@@ -24,7 +24,7 @@ def enroll_in_course():
     if not data or 'course_id' not in data:
         return jsonify({"message": "Invalid data provided"}), 400
 
-    student_id = get_jwt_identity().get('id')
+    student_id = get_jwt_identity()
     enrollment = Enrollment(
         student_id=student_id,
         course_id=data['course_id']
@@ -48,7 +48,7 @@ def get_student_enrollments():
         ...
     ]
     """
-    student_id = get_jwt_identity().get('id')
+    student_id = get_jwt_identity()
     enrollments = Enrollment.query.filter_by(student_id=student_id).all()
     return jsonify([{
         "course_id": enrollment.course_id,
